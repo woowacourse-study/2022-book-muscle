@@ -135,3 +135,107 @@ me.sayHi(); //"Hi! My name is Marco"
     }
   }
   ```
+
+- 상속에 의한 클래스 확장
+
+  - 상속에 의한 클래스 확장은 기존 클래스를 상속받아 새로운 클래스를 확장(extends)하여 정의하는 것이다. 클래스는 상속을 통해 다른 클래스를 확장할 수 있는 문법인 `extends` 키워드가 기본적으로 제공된다.
+
+  ```jsx
+  class Animal {
+    constructor(age, weight) {
+      this.age = age;
+      this.weight = weight;
+    }
+
+    eat() {
+      return "eat";
+    }
+    move() {
+      return "move";
+    }
+  }
+
+  // 상속을 통해 Animal 클래스를 확장한 Bird 클래스
+  class Bird extends Animal {
+    fly() {
+      return "fly";
+    }
+  }
+
+  const bird = new Bird(1, 5);
+  console.log(bird); //[object Object] { age: 1, weight: 5}
+  console.log(bird instanceof Bird); //true
+  console.log(bird instanceof Animal); //true
+  ```
+
+  - 동적 상속 : extends 키워드는 클래스뿐만 아니라 생성자 함수를 상속받아 클래스를 확장할 수도 있다. 단, extends 키워드 앞에는 반드시 클래스가 와야 한다. extends 키워드 다음에는 클래스뿐만이 아니라 [[Construct]] 내부 메서드를 갖는 함수 객체로 평가될 수 있는 모든 표현식을 사용할 수 있다. 이를 통해 동적으로 상속받을 대상을 결정할 수 있다.
+
+    ```jsx
+    function Base1() {}
+    class Base2 {}
+
+    let condition = true;
+
+    //조건에 따라 동적으로 상속 대상을 결정하는 서브클래스
+    class Derived extends (condition ? Base1 : Base2) {}
+
+    const derived = new Derived();
+    console.log(derived);
+    console.log(derived instanceof Base1); //true
+    console.log(derived instanceof Base2); //false
+    ```
+
+  - super 키워드
+
+    - `super를 호출`하면 수퍼클래스의 constructor를 호출한다.
+
+      ```jsx
+      class Base {
+        constructor(a, b) {
+          this.a = a;
+          this.b = b;
+        }
+      }
+
+      class Derived extends Base {
+        constructor(a, b, c) {
+          super(a, b);
+          this.c = c;
+        }
+      }
+
+      const derived = new Derived(1, 2, 3);
+      console.log(derived);
+      ```
+
+      - super 호출 시 주의사항
+        1. 서브클래스에서 constructor를 생략하지 않는 경우 서브클래스의 constructor에서는 반드시 super을 호출해야 한다.
+        2. 서브클래스의 constructor에서 super를 호출하기 전에는 this를 참조할 수 없다.
+        3. super는 반드시 서브클래스의 constructor에서만 호출한다. 서브클래스가 아닌 클래스의 constructor나 함수에서 super를 호출하면 에러가 발생한다.
+
+    - `super를 참조`하면 수퍼클래스의 메서드를 호출할 수 있다.
+
+      - 서브클래스의 프로토타입 메서드 내에서 super.sayHi는 수퍼클래스의 프로토타입 메서드 sayHi를 가리킨다.
+
+        ```jsx
+        //수퍼 클래스
+        class Base {
+          constructor(name) {
+            this.name = name;
+          }
+          sayHi() {
+            return `Hi! ${this.name}`;
+          }
+        }
+
+        //서브클래스
+        class Derived extends Base {
+          sayHi() {
+            //super.sayHi는 수퍼클래스의 프로토타입 메서드를 가리킨다.
+            return `${super.sayHi()}. how are you doing?`;
+          }
+        }
+
+        const derived = new Derived("Marco");
+        console.log(derived.sayHi()); //"Hi! Marco. how are you doing?"
+        ```
