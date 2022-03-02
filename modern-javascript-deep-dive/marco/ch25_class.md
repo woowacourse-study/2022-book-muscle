@@ -239,3 +239,48 @@ me.sayHi(); //"Hi! My name is Marco"
         const derived = new Derived("Marco");
         console.log(derived.sayHi()); //"Hi! Marco. how are you doing?"
         ```
+
+## 프로퍼티
+
+### 인스턴스 프로퍼티
+
+- 인스턴스 프로퍼티는 constructor 내부에서 정의해야 한다.
+- constructor 내부의 this에는 이미 빈 객체(=인스턴스)가 바인딩되어 있다.
+- constructor 내부에서 인스턴스 프로퍼티(=this.이름)를 추가하면, 빈 객체(=인스턴스)에 프로퍼티가 추가되어 인스턴스가 `초기화`된다.
+- constructor 내부에서 this에 추가한 프로퍼티는 인스턴스의 프로퍼티가 되며, 인스턴스의 프로퍼티는 언제나 `public`하다.
+
+### 접근자 프로퍼티
+
+- 접근자 프로퍼티는 자체적으로는 값을 갖지 않고, 다른 데이터 프로퍼티의 값을 읽거나 저장할 때 사용하는 `접근자 함수(getter함수, setter함수)`로 구성된 프로퍼티다.
+  - getter는 인스턴스 프로퍼티에 접근할 때 사용한다.
+  - setter는 인스턴스 프로퍼티에 값을 할당할 때 사용한다.
+    - setter는 단 하나의 값만 할당받기 때문에 단 하나의 매개변수만 선언할 수 있다.
+
+```jsx
+class Person {
+  constructor(firstName, lastName) {
+    this.firstName = firstName;
+    this.lastName = lastName;
+  }
+
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
+  set fullName(name) {
+    // setter는 매개변수를 하나만 받을 수 있다.
+    [this.firstName, this.lastName] = name.split("");
+  }
+}
+```
+
+- 클래스의 메서드는 기본적으로 프로토타입 메서드가 된다. 클래스 내부의 접근자 프로퍼티도 마찬가지로 프로토타입의 프로퍼티다.
+
+### private 프로퍼티
+
+- ES2019`에서 해시 `#`prefix가 추가되어`private class 필드`를 선언할 수 있게 되었다.
+  - https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Classes/Private_class_fields
+  - `private class 필드`를 `접근자 프로퍼티`와 함께 사용할 수 있다.
+- `private 필드`는 클래스 내부에서만 참조할 수 있다. 접근자 프로퍼티를 통해 간접적으로 접근하는 방법만 유효하다.
+- `private 필드`는 반드시 클래스 몸체에 정의해야 한다(constructor 내부 아님). `private 필드`를 constructor에 정의하면 에러가 난다.
+- static private 필드도 가능하다. `static #num = 10`
