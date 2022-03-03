@@ -123,6 +123,155 @@ function Person() {
 }
 ```
 
+# (P 280 ~ 312)
+
 ## 8. `__proto__` 의 역할
 
 프로토타입 상속 관계 (프로토타입 체인)에서 메소드와 프로퍼티를 찾아나가기 위해. 접근한 프로퍼티나 메소드가 프로토타입 체인 속에 존재하는지 확인할 수 있다.
+
+아래처럼 프로토타입 체인을 거슬러 올라가며, 프로퍼티에 접근할 수 있겠지요 ?!
+
+```jsx
+// 생성자 함수
+function constructorFunction() {}
+
+// 생성자 함수가 가리키는 프로토타입에 `name` 프로퍼티를 추가
+constructorFunction.prototype.name = " 1234 ";
+
+// 객체를 생성
+const object = new constructorFunction();
+
+// 이 객체가 가리키는 프로토타입은 constructorFunction.prototype
+console.log(object.__proto__); // { name: ' 1234 ' }
+
+// constructorFunction.prototype 가 가리키는 prototype은 Object.prototype
+console.log(object.__proto__.__proto__); // [Object: null prototype] {}
+```
+
+## 9.객체 리터럴로 객체를 만드는 경우 그 객체의 프로토타입은 뭐죠 ?
+
+`Object.prototype` 입니다. 리터럴로 객체를 생성하더라도, 자바스크립트 자체의 추상연산에 의해 생성된다. 이 추상연산 과정에서 프로토타입이 `Object.prototype`으로 설정된다고 한다.
+
+```jsx
+const obj = {
+  name: 21,
+};
+
+console.log(obj.__proto__); // Object.prototype 입니다.
+```
+
+## 10. 프로토타입 체인 파헤치기
+
+`Object.getPrototypeOf` 메소드를 활용하면 더 명확하게 어떤 프로토타입을 가리키는지 확인할 수 있네요!!
+
+이를 통해 다음 코드를 분석해보자면,
+
+```jsx
+// 생성자 함수입니다.
+function Person(name) {
+  this.name = name;
+}
+
+// 생성자 함수가 가리키는 프로토타입을 수정합니다.
+Person.prototype.sayHello = function () {
+  console.log(this.name);
+};
+
+// 객체를 생성합니다. (생성자 함수를 통해)
+const me = new Person("juunzzi");
+
+// 객체가 가리키는 프로토타입과 생성자 함수의 프로토타입은 같은 곳을 가리킵니다.
+console.log(Object.getPrototypeOf(me) === Person.prototype);
+
+// 생성자 함수가 가리키는 프로토타입의 프로토타입은 지금 상황에선 Object 생성자 함수가 가리키는 프로토타입 입니다.
+console.log(Object.getPrototypeOf(Person.prototype) === Object.prototype);
+```
+
+프로토타입 체인이 만들어지면, 객체의 프로퍼티에 접근할 때 `이 체인을 따라 검색`하게 됩니다.
+
+**- 프로토타입 체인은 상속과 프로퍼티 검색을 위한 메커니즘**
+
+**- 스코프 체인은 식별자 검색을 위한 메커니즘**
+
+## 11. 자바스크립트에도 오버라이딩이 있다구요?!?
+
+네 있습니다. 여기서 잠깐 **오버라이딩이란 ?**
+
+### 오버라이딩
+
+상위 클래스가 가진 메소드를 하위 클래스에서 재정의하여 사용하는 방식이다. 그렇다면, 자바스크립트은 프로토타입 간 상속이 가능한 언어이기 때문에 메소드를 재정의하는 것 또한 가능한가 보군요.
+
+다음과 같이 오버라이딩을 구현할 수 있어요. (이를 **프로퍼티 섀도잉**이라 부른다네요)
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메소드를 추가
+Person.prototype.sayHello = function () {
+  console.log(this.name);
+};
+
+const me = new Person("juunzzi");
+
+// 인스턴스 메소드 추가
+me.sayHello = function () {
+  console.log(`me는 ${this.name}입니다`);
+};
+
+me.sayHello(); // me는 juunzzi입니다.
+```
+
+이 때 중요한건, 프로토타입 메소드를 덮어씌우지 않는다는 사실이에요. 덮어 씌우는 것이 아니라 `인스턴스의 메소드`로 추가한다는 사실!
+
+### 오버라이딩을 풀고싶다면 ?
+
+```jsx
+// ...
+
+delete me.sayHello;
+
+me.sayHello(); // juunzzi
+```
+
+## 12. 프로토타입 변경, 그리고 instanceof 연산잔
+
+우선 프로토타입의 변경은 다음과 같이 수행할 수 있어요.
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+const me = new Person("juunzzi");
+
+const parent = {};
+
+Object.setPrototypeOf(me, parent);
+
+console.log(parent === Object.getPrototypeOf(me)); // true
+```
+
+만약 프로토타입 체인 상에 내가 원하는 생성자 함수의 프로토타입이 존재하는지 확인하고 싶다면 ?
+
+```jsx
+console.log(me instanceof Object); // true
+
+console.log(me instanceof Person); // false -> 변경되어 Person이 존재하지 않게된다.
+
+console.log(me instanceof parent.constructor); // true -> 프로토타입 객체는 생성자 함수와 1:1 대응이다 무조건.
+```
+
+## 13. 프로토타입도 정적 메소드와 정적 프로퍼티를 가질 수 있겠지요?
+
+당연하죠 ~~!!@
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+Person.staticMethod = function () {};
+Person.staticMember = 10;
+
+console.log(Person.staticMember); // 10 -> 인스턴스를 만들지 않아도 접근할 수 있어요
+```
