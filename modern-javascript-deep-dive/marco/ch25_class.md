@@ -276,6 +276,27 @@ class Person {
 
 - 클래스의 메서드는 기본적으로 프로토타입 메서드가 된다. 클래스 내부의 접근자 프로퍼티도 마찬가지로 프로토타입의 프로퍼티다.
 
+- setter 및 getter 메서드를 사용해서 클래스 내에 값을 설정하거나 가져올 수 있다.
+
+```
+class Person {
+  constructor(name) {
+    this.name = name;
+  }
+  set nicknameFunc(value) {
+    this.nickname = value;
+    console.log("Set complete");
+  }
+  get nicknameFunc() {
+    console.log(`Your nickname is ${this.nickname}`);
+  }
+}
+
+const marco = new Person("Marco");
+marco.nicknameFunc = "Porco";
+marco.nicknameFunc;
+```
+
 ### private 프로퍼티
 
 - ES2019`에서 해시 `#`prefix가 추가되어`private class 필드`를 선언할 수 있게 되었다.
@@ -284,3 +305,86 @@ class Person {
 - `private 필드`는 클래스 내부에서만 참조할 수 있다. 접근자 프로퍼티를 통해 간접적으로 접근하는 방법만 유효하다.
 - `private 필드`는 반드시 클래스 몸체에 정의해야 한다(constructor 내부 아님). `private 필드`를 constructor에 정의하면 에러가 난다.
 - static private 필드도 가능하다. `static #num = 10`
+
+클래스는 일차적으로 자바스크립트의 기존 `프로토타입 기반 상속`에 대한 문법적 설탕(Syntax Sugar)이다. 클래스 문법이 자바스크립트에 새로운 객체 지향 상속 모델을 도입하는 것은 아니다.
+
+## 클래스 생성
+
+- 클래스에 접근하기 전에 클래스를 선언하지 않으면 ReferenceError가 발생한다.
+
+  - 클래스를 만드는 방법 2가지
+
+    1. 클래스 선언
+
+       ```jsx
+       class Person {}
+       ```
+
+    2. 클래스 표현식
+
+       ```jsx
+       cont person = class Person  {
+       }
+       ```
+
+- 생성자 메서드를 추가한 것을 제외하면 프로토타입 방식과 큰 차이가 없다. 생성자는 하나만 추가해야 한다.
+
+  - 기존의 프로토타입 방식
+
+    - 프로토타입은 하나의 객체이며, 사용자가 생성한 모든 함수는 새로운 빈 객체를 가리키는 `prototype 프로퍼티`를 가진다. 프로토타입 객체는 객체 리터럴이나 Object() 생성자로 만든 객체와 거의 비슷하다.
+
+    ```jsx
+    function Person(name, age) {
+      this.name = name;
+      this.age = age;
+    }
+
+    Person.prototype.greet = function () {
+      console.log(`Hi, my name is ${this.name} and I'm ${this.age} years old`);
+    };
+
+    const marco = new Person("Marco", 100);
+    marco.greet();
+    //Hi, my name is Marco and I'm 100 years old
+    ```
+
+  - 클래스 방식(프로토타입 방식과 동일하게 작동한다)
+
+    ```jsx
+    class Person {
+      constructor(name, age) {
+        this.name = name;
+        this.age = age;
+      }
+      greet() {
+        console.log(
+          `Hi, my name is ${this.name} and I'm ${this.age} years old`
+        );
+      }
+    }
+
+    const marco = new Person("Marco", 100);
+    marco.greet();
+    //Hi, my name is Marco and I'm 100 years old
+    ```
+
+### (클래스를 마치며 심화) new 바인딩
+
+- 자바스크립트에서 new는 의미상 클래스 지향적인 기능과 아무 상관이 없다.
+- 자바스크립트에서 '생성자'는 앞에 new 연산자가 있을 때 호출되는 일반 함수에 불과하다.
+  - 클래스에 붙은 것도 아니고 클래스 인스턴스화 기능도 없다.
+  - 심지어 특별한 형태의 함수도 아니다.
+  - 단지 new를 사용하여 호출할 때 자동으로 붙들려 실행되는 평범한 함수다.
+- 함수 앞에 new를 붙여 생성자 호출을 하면 다음과 같은 일들이 저절로 일어난다.
+  1. 새 객체가 툭 만들어진다.
+  2. 새로 생성된 객체의 [[prototpye]]이 연결된다.
+  3. 새로 생성된 객체는 해당 함수 호출 시 this로 바인딩된다.
+  4. 이 함수가 자신의 또 다른 객체를 반환하지 않는 한 new와 함께 호출된 함수는 자동으로 새로 생성된 객체를 반환한다.
+  ```jsx
+  function foo(a) {
+    this.a = a;
+  }
+  const bar = new foo(2);
+  console.log(bar.a);
+  ```
+  - 앞에 new를 붙여 foo()를 호출했고 새로 생성된 객체는 foo 호출 시 this에 바인딩된다. 따라서 결국 new는 함수 호출 시 this를 새 객체와 바인딩 하는 방법이며 이것이 'new 바인딩'이다.
