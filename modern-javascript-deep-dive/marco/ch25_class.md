@@ -240,6 +240,8 @@ me.sayHi(); //"Hi! My name is Marco"
         console.log(derived.sayHi()); //"Hi! Marco. how are you doing?"
         ```
 
+[3.2 분량 시작]
+
 ## 프로퍼티
 
 ### 인스턴스 프로퍼티
