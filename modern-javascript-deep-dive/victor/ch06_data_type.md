@@ -113,5 +113,54 @@ var name = victor // ReferenceError: victor is not defined
 
 - 태그드 템플릿
     - 태그드 템플릿에 대한 설명과 예시는 [여기](https://mygumi.tistory.com/395) 자세히 나와있다.
-    - [styled-components](https://styled-components.com)는 태그트 템플릿을 활용한다.
-        - 즉, styled-components를 사용한 경험이 있다면, 태그트 템플릿을 자신도 모르게 사용한 것이다.
+    - [styled-components](https://styled-components.com)는 태그드 템플릿을 활용한다.
+        - 즉, styled-components를 사용한 경험이 있다면, 태그드 템플릿을 자신도 모르게 사용한 것이다.
+
+### 불리언 타입
+- 불리언 타입의 값은 `true`와 `false` 뿐이다.
+
+### undefined 타입
+- undefined 타입의 값은 `undefined` 뿐이다.
+- 자바스크립트 엔진이 변수를 초기화할 때 사용하는 값이다.
+    - var 키워드로 선언한 변수는 코드 평가 단계에서 `변수의 선언`과 `변수 초기화`가 동시에 일어나고, `변수 초기화` 단계에서 확보된 메모리 공간를 undefined로 초기화해서 변수에 할당한다.
+- 의도적으로 undefined 값을 변수에 할당하는 것은 좋은 습관이 아니다.
+    
+
+### null 타입
+- null 타입의 값은 `null`이 유일하다.
+- 변수에 값이 없다는 것을 의도적으로 명시할 때 사용한다.
+- 또는 함수가 유효한 값을 반환할 수 없는 경우 명시적으로 null을 반환한다.
+    - ex) document.querySelector() 메서드로 조건에 맞는 요소를 검색하지 못하는 경우, 해당 메서드는 null을 반환한다.
+
+### [심벌 타입](https://developer.mozilla.org/ko/docs/Web/JavaScript/Reference/Global_Objects/Symbol)
+- 변경 불가능한 원시 타입의 값이다.
+- 심벌 값은 다르값과 중복되지 않는 유일무이한 값이다.
+- 심벌 값은 Symbol 함수를 호출해서 생성한다.
+- 예제
+
+```javascript
+    const testSymbol1 = Symbol(100);
+    const testSymbol2 = Symbol(100);
+
+    console.log(testSymbol1 === 100); // false
+    console.log(testSymbol1 === testSymbol2); // false 
+```
+
+### 객체 타입
+- 자바스크립트는 객체 기반의 언어이다.
+    - 자바스크립트를 이루고 있는 거의 모든 것이 객체이다.
+
+### 데이터 타입의 필요성
+1. 값을 저장할 떄 확보해야 하는 메모리 공간의 크기를 결정하기 위해서
+2. 값을 참조할 때 한 번에 읽어 들여야 하는 메모리 공간의 크기를 결정하기 위해서
+3. 메모리에서 읽어 들인 2진수를 해석하는 방법을 결정하기 위해서
+    - 값은 메모리에 2진수 형태로 저장된다.
+
+> 심볼 테이블이라는 자료 구조를 통해 식별자를 키로 바인딩된 값의 메모리 주소, 데이터 타입, 스코프 등을 관린하다고 한다.
+어떤 식으로 동작하는지 조금 더 깊게 알고싶은데 자료를 못찾겠네 😇
+
+### 동적 타이핑
+- 자바스크립트는 동적 타입 언어이다.
+    - var, let, const 등의 키워드로 변수를 선언할 뿐, 타입을 선언하지는 않는다.
+- 자바스크립트의 변수 선언 시 타입을 가지지 않지만, 할당된 값에 의해 변수의 타입이 동적으로 할당된다.
+
