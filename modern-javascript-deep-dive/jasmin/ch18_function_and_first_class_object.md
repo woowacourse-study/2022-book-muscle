@@ -66,7 +66,7 @@ console.log(anonymousFunc.name); // anonymous
 
 ---
 
-## ** proto **
+## **proto**
 
 모든 객체는 [[Prototype]] 이라는 내부슬롯을 가진다. 이것은 객체지향 프로그래밍의 상속을 구현하는 프로토타입 객체를 가르킨다.
 
