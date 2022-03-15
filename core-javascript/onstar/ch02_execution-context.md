@@ -62,9 +62,9 @@ var b = function () {}; // 함수 표현식
 이러한 '식별자의 유효범위'를 안에서 바깥으로 차례로 검색해나가는 것을 `스코프 체인`이라한다.
 
 outerEnvironmentReference는 현재 호출된 함수가 '선언될 당시'의 LexicalEnvironment를 참조한다.
-a라는 식별자를 가진 변수를 어떤 함수 내부에서 접근하는 상황이라고 생각한다면, 함수가 실행됨에 따라 활성화된 실행 컨텍스트의 environmentRocord에서 a를 검색하고, 발견하지 못한다면 outerEnviromentReference가 참조하고 있는 외부의 LexicalEnvironment에 접근하여 environmentRocord에서 a 를 검색할 것이고, 해당 식별자가 존재한다면 할당된 값을 사용하게 될 것이고, 이 LexicalEnvironment에서도 발견하지 못한다면, 이 과정을 반복해 결국 전역 컨텍스트까지 탐색하게 될 것이다.
+a라는 식별자를 가진 변수를 어떤 함수 내부에서 접근하는 상황이라고 생각한다면, 함수가 실행됨에 따라 활성화된 실행 컨텍스트의 environmentRecord에서 a를 검색하고, 발견하지 못한다면 outerEnvironmentReference가 참조하고 있는 외부의 LexicalEnvironment에 접근하여 environmentRecord에서 a 를 검색할 것이고, 해당 식별자가 존재한다면 할당된 값을 사용하게 될 것이고, 이 LexicalEnvironment에서도 발견하지 못한다면, 이 과정을 반복해 결국 전역 컨텍스트까지 탐색하게 될 것이다.
 
-스코프 체인 상에 있는 변수라고 해서 무조건 접근이 가능한 것이 아니라 가장 가까운 LexicalEnviroment 부터 탐색하기 때문에 발견이 된 순간 더 외부에 있는 변수엔 접근할 수 없을 것이다. 이를 변수 은닉화라고한다.
+스코프 체인 상에 있는 변수라고 해서 무조건 접근이 가능한 것이 아니라 가장 가까운 LexicalEnvironment 부터 탐색하기 때문에 발견이 된 순간 더 외부에 있는 변수엔 접근할 수 없을 것이다. 이를 변수 은닉화라고한다.
 
 - 크롬,파이어폭스등 브라우저에서 스코프 체인과 this 정보를 직접 눈으로 따라가보며 확인해보길 추천한다.
 
