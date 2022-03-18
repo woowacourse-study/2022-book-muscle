@@ -236,3 +236,234 @@ me객체에는 constructor 프로퍼티가 없지만 me 객체의 프로토타�
 따라서 me 객체는 프로토타입인 Person.prototype의 constructor프로퍼티를 상속받아 사용가능하다!
 
 <img src="./asset/스크린샷%202022-03-15%20오후%203.58.59.png">
+
+## 리터럴 표기법에 의해 생성된 객체의 생성자 함수와 프로토타입
+
+앞에서 살펴본 바와 같이 생성자 함수에 의해 생성된 인스턴스는 프로토타입의 constructor 프로퍼티에 의해 생성자 함수와 연결된다.
+
+이때 constructor 프로퍼티가 가르키는 생성자 함수는 인스턴스를 생성한 생성자 함수이다.
+
+```jsx
+// obj 객체를 생성한 생성자 함수는 Object다.
+const obj = new Object();
+console.log(obj.constructor === Object); // true
+
+// add 함수 객체를 생성한 생성자 함수는 Function이다.
+const add = new Function("a", "b", "return a + b");
+console.log(add.constructor === Function); // true
+
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+// me 객체를 생성한 생성자 함수는 Person이다.
+const me = new Person("Lee");
+console.log(me.constructor === Person); // true
+```
+
+하지만 new 를 이용하지 않고 하는 방법도 존재한다. 이때는 어떻게 동작을 할까?
+
+```jsx
+// obj 객체는 Object 생성자 함수로 생성한 객체가 아니라 객체 리터럴로 생성했다.
+const obj = {};
+
+// 하지만 obj 객체의 생성자 함수는 Object 생성자 함수다.
+console.log(obj.constructor === Object); // true
+```
+
+위 예제의 obj 객체는 Object 생성자 함수로 생성한 객체가 아니라 객체 리터럴에 의해 생성된 객체이다.
+
+하지만 obj객체는 Object 생성자 함수와 constructor 프로퍼티로 연결되어있다. 그렇다면 객체 리터럴에 의해 생성된 객체는
+사실 Object 생성자 함수로 생성되는거 아닐까??
+
+다음은 Object 생성자 함수의 동장 방식이다.
+
+```jsx
+// 1. new.target이 undefined나 Object가 아닌 경우
+// 인스턴스 -> Foo.prototype -> Object.prototype 순으로 프로토타입 체인이 생성된다.
+class Foo extends Object {}
+new Foo(); // Foo {}
+
+// 2. Object 생성자 함수에 의한 객체 생성
+// Object 생성자 함수는 new 연산자와 함께 호출하지 않아도 new 연산자와 함께 호출한 것과 동일하게 동작한다.
+// 인수가 전달되지 않았을 때 추상 연산 OrdinaryObjectCreate를 호출하여 빈 객체를 생성한다.
+let obj = new Object();
+console.log(obj); // {}
+
+// 3. 인수가 전달된 경우에는 인수를 객체로 변환한다.
+// Number 객체 생성
+obj = new Object(123);
+console.log(obj); // Number {123}
+
+// String  객체 생성
+obj = new Object("123");
+console.log(obj); // String {"123"}
+```
+
+객체 리터럴이 평가될때는 다음과 같이 추상연산 `OrdinaryObjectCreate`를 호출하여 빈 객체를 생성하고 프로퍼티를 추가하도록 정의되어 있다.
+
+이처럼 `Object` 생성자 함수 호출과 `객체 리터럴` 평가는 추상연산 `OrdinaryObjectCreate`를 호출하여 빈 객체를 생성하는 점에서 동일하나 **new.target의 확인이나 프로퍼티를 추가하는 처리등 세부내용은 다르다**
+
+따라서 객체리터럴로 생성된 객체는 `Object` 생성자 함수가 생성한 객체가 아니다.
+
+---
+
+함수 객체의 경우 그 차이가 좀더 명확하다.
+
+`Function` 생성자 함수는 렉시컬 스코프를 만들지 않고 전역 함수인것처럼 스코프를 생성하며 클로저도 만들지 않는다.
+
+따라서 함수 선언문과 함수 표현식을 이용해 만든 함수 객체는 `Function` 생성자 함수가 아니다.
+
+하지만 constructor 프로퍼티를 통해 확인하면 foo의 생성자 함수는 `Function`이다.
+
+```jsx
+// foo 함수는 Function 생성자 함수로 생성한 함수 객체가 아니라 함수 선언문으로 생성했다.
+function foo() {}
+
+// 하지만 constructor 프로퍼티를 통해 확인해보면 함수 foo의 생성자 함수는 Function 생성자 함수다.
+console.log(foo.constructor === Function); // true
+```
+
+리터럴 표기법에 의해 생성된 객체도 상속을 위해 프로토타입이 필요하다!
+
+따라서 리터럴 표기법에 의해 생성된객체도 가상적인 생성자 함수를 가진다. 프로토타입은 생성자 함수와 더불어 생성되며 prototype, constructor 프로퍼티에 의해 연결되어 있기 때문이다.
+
+**즉, 프로토타입과 생성자함수는 단독으로 존재할수 없고 항상 쌍으로 존재한다.**
+
+리터럴 표기법에 의해 생성된 객체는 생성자 함수에 의해 생성된 객체가 아니다. 하지만 큰틀에서 생각해보면 리털러 표기법으로 생성한 객체도 생성자 함수로 생성한 객체와 본질적인 면에서 큰 차이가 없다.
+
+예를들어, 객체리터럴에 의해 생성한 객쳉좌 Object 생성자 함수에 의해 생성한 객체는 생성 과정에 미묘한 차이가 있지만 결국 객체로서 동일한 특성을 가진다.
+
+함수리터럴에 의해 생성한 함수와 Function 생성자 함수에 의해 생성한 함수도 클로저, 스코프에 차이는 있지만 함수라는 동일한 특성을 가진다.
+
+## 프로토 타입의 생성 시점
+
+**프로토타입은 생성자 함수가 생성되는 시점에 더불어 생성된다**
+
+아까 설명했듯이 프로토타입과 생성자 함수는 단독으로 존재할수 없고 언제나 쌍으로 존재하기때문이다.
+
+생성자 함수는 사용자가 생성한 사용자 정의 생성자 함수 그리고 기본으로 존재하는 빌트인 생성자 함수를 구분하여 프로토타입 생성시점에 살펴보자
+
+### 사용자 정의 생성자 함수와 프로토타입 생성시점
+
+생성자 함수로서 호출할수 있는 함수, 즉 constructor는 함수 정의가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다.
+
+```jsx
+// 함수 정의(constructor)가 평가되어 함수 객체를 생성하는 시점에 프로토타입도 더불어 생성된다.
+console.log(Person.prototype); // {constructor: ƒ}
+
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+```
+
+생성자 함수로서 호출할수 없는 함수, 즉 non-constructor는 프로토타입이 생성되지않는다.
+
+```jsx
+// 화살표 함수는 non-constructor다.
+const Person = (name) => {
+  this.name = name;
+};
+
+// non-constructor는 프로토타입이 생성되지 않는다.
+console.log(Person.prototype); // undefined
+```
+
+함수 선언문은 런타임 이전에 자바스크립트 엔진에 의해 먼저 실행된다.
+
+따라서 함수 선언문으로 정의된 Person 생성자 함수는 어떤 코드보다 먼저 평가 되어 함수객체가 된다.
+**이때 더불어 프로토타입도 생성된다.**
+
+이처럼 빌트인 생성자 함수가 아닌 사용자 정의 생성자 함수는 자신이 평가되어 함수 객체로 생성되는 시점에 프로토타입도 더불어 생성된다.
+
+### 빌트인 생성자 함수와 프로토타입 생성 시점
+
+모든 빌트인 생성자 함수는 전역객체가 생성되는 시점에 생성된다. 생성된 프로토타입은 빌트인 생성자 함수의 prototype 프로퍼티에 바인딩 된다.
+
+이처럼 객체가 생성되기 이전에 생성자 함수와 프로토타입은 이미 객체화되어 존재한다.
+
+**이후 생성자 함수또는 리터럴 표기법으로 객체를 생성하면 프로토타입은 생성된 객체의 `[[Prototype]]` 내부 슬롯에 할당된다.**
+이로써 생성된 객체는 프로토타입을 상속받는다.
+
+## 객체 생성 방식과 프로토타입의 결정
+
+객체는 다음과 같이 다양한 생성 방법이 있다.
+
+- 객체 리터럴
+- Object 생성자 함수
+- 생성자 함수
+- Object.create 메서드
+- 클래스(es6)
+
+이처럼 다양한 방식으로 생성된 모든 객체는 각 방식마다 세부적인 생성 방식의 차이는 있으나 추상 연산 `OrdinaryObjectCreate`에 의해 생성된다는 공통점이 있다.
+
+추상연산 `OrdinaryObjectCreate`는 필수적으로 자신이 생성할객체의 프로토타입을 인수로 받는다.
+
+그리고 자신이 생성할 객체에 추가할 프로퍼티 목록을 옵션으로 전달할수 있다. 추상연산 `OrdinaryObjectCreate`는 빈 객체를 생성한후, 객체에 추가할 프로퍼티 목록이 인수로 전달된 경우 프로퍼티를 객체에 추가한다.
+
+그리고 인수로 전달받은 자신이 생성한 객체의 `[[Prototype]]` 내부 슬롯에 할당한 다음, 생성한 객체를 반환한다.
+
+즉, 프로토타입은 추상 연산 `OrdinaryObjectCreate`에 전달되는 **인수에 의해 결정된다.**이 인수는 객체가 생성되는 시점에 객체 생성 방식에 의해 결정된다.
+
+### 객체 리터럴에 의해 생성된 객체의 프로토타입
+
+자바스크립트는 객체 리터럴을 평가하여 객체를 생성할때 추상연산 `OrdinaryObjectCreate`를 호출한다.
+
+이때 추상연산 `OrdinaryObjectCreate`에 전달되는 프로토타입은 Object.prototype이다.
+
+```jsx
+const obj = { x: 1 };
+```
+
+위 객체 리터럴이 평가되면 추상 연산 `OrdinaryObjectCreate`에 의해 Object 생성자함수와 Object.prototype과 생성된 객체 사이에 연결이 만들어진다.
+
+이처럼 obj객체는 Object.prototype을 프로토타입으로 가지게 되며, Objecct.prototype을 상속받는다.
+
+obj객체가 constructor랑 hasOwnProperty등등을 가지고 있는것 같지만 자신의 프로토타입인 Object.prototype을 자유롭게 사용할수 있는것이다.
+
+## Object 생성자 함수에 의해 생성된 객체의 프로토 타입
+
+Object 생성자함수를 인수없이 호출하면 빈객체가 생성된다.
+
+Object생성자 함수를 호출할시에 객체리터럴과 마찬가지로 추상연산 `OrdinaryObject` 가 호출된다. 이때 추상연산 `OrdinaryObject`에 전달되는 프로토타입은 Object.prototype이다.
+
+이처럼 객체리터럴과 생성자 함수 방식은 객체생성방식에 차이만 있고 동일하다. 객체리터럴 내부에 프로퍼티를 추가하지만 Object 생성자 함수 방식은 일단 빈객체를 생성한 이후 프로퍼티를 추가해야한다.
+
+## 생성자 함수에 의해 생성된 객체의 프로토타입
+
+new 연산자와 함께 생성자함수를 호출하여 인스턴스를 생성하면 다른 객체 생성 방식과 마찬가지로 추상연산 `OrdinaryObject`가 호츨된다. 이때 `OrdinaryObject`에 전달되는 프로토타입은 생성자함수의 prototype 프로퍼티에 바인딩 되어있는 객체다.
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+
+const me = new Person("me");
+```
+
+위 코드가 실행되면 추상연산 `OrdinaryObjectCreate` 에 의해 **생성자 함수와 생성자 함수의 prototype 프로퍼티에 바인딩 되어있는 객체와 생성된객체 사이**에 연결이 만들어진다.
+
+프로토타입 Person.prototype에 프로퍼티를 추가하여 하위 객체가 상속받을수 있도록 구현해보자.
+
+프로토타입도 객체이기에 프로퍼티를 추가/삭제 할수있다. 그리고 이렇게 추가/삭제한것은 바로 프로토체인에 즉각 반응한다.
+
+```jsx
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My name is ${this.name}`);
+};
+
+const me = new Person("Lee");
+const you = new Person("Kim");
+
+me.sayHello(); // Hi! My name is Lee
+you.sayHello(); // Hi! My name is Kim
+```
+
+Person생성자 함수를 통해 생성된 모든 객체는 프로토타입에 추가된 sayHello메서드를 상속받아 자신의 메서드로 사용할수 있다.
