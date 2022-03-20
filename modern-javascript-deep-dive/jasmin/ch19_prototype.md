@@ -917,3 +917,140 @@ const obj = Object.create(myProto, {
 console.log(obj.x, obj.y); // 10 20
 console.log(Object.getPrototypeOf(obj) === myProto); // true
 ```
+
+## 정적 프로퍼티/메서드
+
+정적 프로퍼티/메서드는 생성자 함수로 인스턴스를 생성하지 않아도 참조/호출할수 있는 프로퍼티/메서드를 말한다.
+
+다음 예제를 살펴보자.
+
+```jsx
+// 생성자 함수
+function Person(name) {
+  this.name = name;
+}
+
+// 프로토타입 메서드
+Person.prototype.sayHello = function () {
+  console.log(`Hi! My name is ${this.name}`);
+};
+
+// 정적 프로퍼티
+Person.staticProp = "static prop";
+
+// 정적 메서드
+Person.staticMethod = function () {
+  console.log("staticMethod");
+};
+
+const me = new Person("Lee");
+
+// 생성자 함수에 추가한 정적 프로퍼티/메서드는 생성자 함수로 참조/호출한다.
+Person.staticMethod(); // staticMethod
+
+// 정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할 수 없다.
+// 인스턴스로 참조/호출할 수 있는 프로퍼티/메서드는 프로토타입 체인 상에 존재해야 한다.
+me.staticMethod(); // TypeError: me.staticMethod is not a function
+```
+
+Person 생성자 함수는 객체이므로 자신의 프로퍼티/메서드를 소유할수있다. Person 생성자 함수 객체가 소유한 프로퍼티/메서드를 정적 프로퍼티/메서드라고 한다.
+
+정적 프로퍼티/메서드는 생성자 함수가 생성한 인스턴스로 참조/호출할수 없다.
+
+생성자 함수가 생성한 인스턴스는 자신의 프로토타입 체인에 소간 객체의 프로퍼티/메서드에 접근할수 있다. 하지만 정적 프로퍼티/메서드는 인스턴스의 프로토타입 체인에 속한 객체의 프로퍼티/메서드가 아니므로 인스턴스로 접근할수 없다.
+
+# 프로퍼티 존재 확인
+
+## in연산자
+
+```jsx
+key in object;
+```
+
+in 연산자는 객체내에 특정 플퍼티가 존재하는지 여부를 확인한다.
+
+in연산자는 대상 객체의 프로퍼티뿐만 아니라 확인 대상 객체가 상속받은 모든 프로토타입의 프로퍼티를 확인하므로 주의가 필요하다.
+
+```jsx
+const person = {
+  name: "Lee",
+  address: "Seoul",
+};
+
+// person 객체에 name 프로퍼티가 존재한다.
+console.log("name" in person); // true
+// person 객체에 address 프로퍼티가 존재한다.
+console.log("address" in person); // true
+// person 객체에 age 프로퍼티가 존재하지 않는다.
+console.log("age" in person); // false
+```
+
+in연산자 대신에 es6에서 도입된 `Reflect.has` 메서드를 이용할수 있다!(동작은 동일하다)
+
+## Object.protoype.hasOwnProperty 메서드
+
+in 연산자와 동일하게 확인할수 있지만 확인 대상 객체에 있는 프로퍼티만 확인한다!
+
+```jsx
+console.log(person.hasOwnProperty("name")); // true
+console.log(person.hasOwnProperty("age")); // false
+
+console.log(person.hasOwnProperty("toString")); // false
+```
+
+# 프로퍼티 열거
+
+## for ... in 문
+
+객체의 모든 프로퍼티를 순회함 열거하려면 for ... in 문을 이용한다.
+
+```jsx
+const person = {
+  name: "Lee",
+  address: "Seoul",
+};
+
+// for...in 문의 변수 prop에 person 객체의 프로퍼티 키가 할당된다.
+for (const key in person) {
+  console.log(key + ": " + person[key]);
+}
+// name: Lee
+// address: Seoul
+```
+
+for ... in 문은 in 연산자 처럼 순회 대상 객체의 프로퍼티뿐만 아니라 상속받은 프로토타입의 프로퍼티까지 열거한다.
+하지만 위 예제의 경우 `toString`과 같은 Object.prototype의 프로퍼티가 열거되지않는다.
+
+그 이유는 `toString`이 열거할수 없도록 정의되어 있는 프로퍼티이기 때문이다. **다시 말해, Object.prototyype.string 프로퍼티의 프로퍼티 어트리뷰트 `[[Enumerable]]`의 값이 false이기때문이다**
+
+프로퍼티 어트리뷰트 `[[Enumerable]]`은 프로퍼티 열거가능 여부를 나타내며 불리언값을 갖는다.
+
+**즉 for ... in 문은 프로토타입 체인상에 존재하는 모든 프로토타입의 프로토타입의 프로퍼티중에서 프로퍼티 어트리뷰트 `[[Enumerable]]`의 값이 true인 프로퍼티를 순회하며 열거한다.**
+
+> for ... in 문은 키가 심벌인 프로퍼티는 열거하지 않는다.
+
+자신의 프로퍼티만 열거하고 싶다면 hasOwnProperty를 이용하면 된다.
+
+```jsx
+const person = {
+  name: "Lee",
+  address: "Seoul",
+  __proto__: { age: 20 },
+};
+
+for (const key in person) {
+  // 객체 자신의 프로퍼티인지 확인한다.
+  if (!person.hasOwnProperty(key)) continue;
+  console.log(key + ": " + person[key]);
+}
+// name: Lee
+// address: Seoul
+```
+
+## Object.keys/values/entries 메서드
+
+객체 자신의 프로퍼티만 열거하기위해서는 for ... in 문보다는 Object.keys/values/entries 메서드를 사용하는것을 권장한다.
+
+- Object.keys는 열거가능한 프로퍼티의 키를 배열로 반환한다.
+- Object.values는 열거가능한 프로퍼티의 값을 배열로 반환한다.
+- Object.entries는 열거가능한 프로퍼티의 키와 값의 쌍의 배열을 배열에 담아 반환한다.
