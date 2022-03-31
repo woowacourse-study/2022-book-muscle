@@ -76,8 +76,37 @@ onstar.getName(); // 'onstar'
 Person 생성자 함수에는 getName 메서드가 존재하지 않는다. 그 뜻은 인스턴스인 onstar 에도 마찬가지로 getName 메서드가 존재하지 않는다는 뜻이다. getName 메서드는 프로토타입에 존재할 뿐 인스턴스에는 존재하지 않는다. 그런데 어떻게 onstar 를 반환했을까?
 
 그 이유는 자바스크립트의 특이성에 있다.
-`onstar.getName()` 처럼 쓰인 코드는 `onstar.__proto__.getName().call(onstar)` 처럼 작동할 것이다.
+`onstar.getName()` 처럼 쓰인 코드는 `onstar.__proto__.getName.call(onstar)` 처럼 작동할 것이다.
 
 즉, dunder proto 를 생략해도 프로토타입의 메서드에 접근할 수 있게 해주며 이때 this 는 호출주체인 인스턴스를 가리키게 해준다.
 
-이상하다고 느끼는게 당연하다. 이는 자바스크립트의 프로토타입이 이렇게 이용될 것이라고 태초부터 정해져있었기 때문이다. 전체 구조를 설계한 브랜든 아이크의 아이디어로 '그냥 그런가보다' 하면 될 것이다.
+이상하다고 느끼는게 당연하다. dunder proto가 생략이 가능하며, 생략을 해도 프로토타입에 있는 메서드나 프로퍼티에 자신의 것처럼 접근하는 것은 우리의 JS 상식에 벗어난다. 이는 자바스크립트의 프로토타입이 이렇게 이용될 것이라고 태초부터 정해져있었기 때문이다. 전체 구조를 설계한 브랜든 아이크의 아이디어로 '그냥 그런가보다' 하면 될 것이다.
+
+### 프로토타입 도식
+
+<img src="https://images.velog.io/images/cks3066/post/cb664965-859f-45ab-8c1b-eb405a3f875e/%E1%84%89%E1%85%A5%E1%84%8C%E1%85%A1%E1%86%AB.png" width="500">
+
+위에서 한번 살펴보았던 도식이다. 이제 어느정도 프로토타입에 대해 이해가 되었다면, 생성사를 호출할 때 이 도식을 통해 다음 문장까지 연결시켜보자.
+
+"new 연산자로 constructor를 호출하면 instance가 만들어지는데, 이 instance의 생략 가능한 프로퍼티인 `__proto__`는 constructor의 prototype을 참조한다!"
+
+### constructor 프로퍼티
+
+생성사 함수의 프로퍼티인 prototype 객체 내부에는 constructor라는 프로퍼티가 있다. 인스턴스의 `__proto__` 객체 내부에도 마찬가지이다. 이 constructor 프로퍼티는 단어 그대로 원래의 생성자 함수(자기 자신)을 참조한다.
+
+이를 통해 다양하게 인스턴스를 생성하는 방법을 예시와 함께 살펴보자.
+
+```js
+const Person = function (name) {
+  this.name = name;
+};
+
+const person1 = new Person('사람1');
+const Person1Prototype = Object.getPrototypeOf(person1);
+const Person2 = Person1Prototype.constructor('사람2');
+const Person3 = Person.prototype.constructor('사람3');
+const Person4 = Person1.__proto__.constructor('사람4');
+const Person5 = Person1.constructor('사람5');
+```
+
+이렇게 생성자 함수 자체를 가리키는 constructor를 통해 생성자 함수에 접근할 수 있고 인스턴스를 생성할 수 있는데, constructor는 일부 예외적 상황을 제외하고는 값을 변경할 수 있다. 그렇기 때문에 생성자 함수에 접근하기 위해 constructor 프로퍼티에 의존하는 것은 항상 안전한 방법은 아니다. 다만 이 가변적인 constructor 프로퍼티 덕분에 클래스 상속을 흉내 내는 것이 가능해진 측면이 있다.
