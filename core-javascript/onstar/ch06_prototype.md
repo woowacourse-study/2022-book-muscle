@@ -1,4 +1,4 @@
-## 프로토타입의 개념 이해
+## 01 프로토타입의 개념 이해
 
 자바스크립트는 프로토타입 기반 언어이다. 클래스 기반 언어에서는 '상속'을 사용하지만 프로토타입 기반 언어에서는 어떤 객체를 원형(Prototype)으로 삼고 이를 복제(참조)함으로써 상속과 비슷한 효과를 얻는다.
 
@@ -51,12 +51,12 @@ const Person = function (name) {
 };
 
 Person.prototype.getName = function () {
-  return this.name;
+  return '프로토타입 메서드: ' + this.name;
 };
 
 const onstar = new Person('onstar');
-onstar.__proto__.getName(); // undefined
-onstar.getName(); // 'onstar'
+onstar.__proto__.getName(); // 프로토타입 메서드: undefined
+onstar.getName(); // 프로토타입 메서드: onstar
 ```
 
 위의 코드에서 이상한 점이 있는가? 이상한 점을 느끼지 못했다면 이전 챕터들에 대한 이해가 부족하거나 혹은 이미 자바스크립트적인 시각을 가지고 코드를 해석하고있는 것 일테다.
@@ -78,7 +78,7 @@ Person 생성자 함수에는 getName 메서드가 존재하지 않는다. 그 �
 그 이유는 자바스크립트의 특이성에 있다.
 `onstar.getName()` 처럼 쓰인 코드는 `onstar.__proto__.getName.call(onstar)` 처럼 작동할 것이다.
 
-즉, dunder proto 를 생략해도 프로토타입의 메서드에 접근할 수 있게 해주며 이때 this 는 호출주체인 인스턴스를 가리키게 해준다.
+이를 좀 더 프로토타입의 동작방식과 비슷하게 생각하면 `onstar(.__proto__).getName()` 이런 형태일 것인데, 개념상 dunder proto 부분이 생략되는 것에 더 유사할 것이다. 즉, dunder proto 를 생략해도 프로토타입의 메서드에 접근할 수 있게 해주며 이때 this 는 호출주체인 인스턴스를 가리키게 해준다.
 
 이상하다고 느끼는게 당연하다. dunder proto가 생략이 가능하며, 생략을 해도 프로토타입에 있는 메서드나 프로퍼티에 자신의 것처럼 접근하는 것은 우리의 JS 상식에 벗어난다. 이는 자바스크립트의 프로토타입이 이렇게 이용될 것이라고 태초부터 정해져있었기 때문이다. 전체 구조를 설계한 브랜든 아이크의 아이디어로 '그냥 그런가보다' 하면 될 것이다.
 
@@ -110,3 +110,69 @@ const Person5 = Person1.constructor('사람5');
 ```
 
 이렇게 생성자 함수 자체를 가리키는 constructor를 통해 생성자 함수에 접근할 수 있고 인스턴스를 생성할 수 있는데, constructor는 일부 예외적 상황을 제외하고는 값을 변경할 수 있다. 그렇기 때문에 생성자 함수에 접근하기 위해 constructor 프로퍼티에 의존하는 것은 항상 안전한 방법은 아니다. 다만 이 가변적인 constructor 프로퍼티 덕분에 클래스 상속을 흉내 내는 것이 가능해진 측면이 있다.
+
+## 02 프로토타입 체인
+
+prototype 객체를 참조하는 dunder proto를 생략하면 인스턴스는 prototype에 정의된 프로퍼티나 메서드를 마치 자신의 것처럼 사용할 수 있다.
+
+```js
+const Person = function (name) {
+  this.name = name;
+};
+
+Person.prototype.getName = function () {
+  return '프로토타입 메서드: ' + this.name;
+};
+
+const onstar = new Person('onstar');
+onstar.__proto__.getName(); // 프로토타입 메서드: undefined
+onstar.getName(); // 프로토타입 메서드: onstar
+```
+
+dunder proto가 생략되든 안되는 두 메서드 호출 코드는 같은 메서드를 가리킬 것이다.
+하지만 onstar의 인스턴스가 자신의 getName 메서드를 가지고 있다면 어떻게될까?
+
+```js
+const Person = function (name) {
+  this.name = name;
+}
+
+Person.prototype.getName = function() {
+  return '프로토타입 메서드: ' + this.name;
+}
+
+const onstar = new Person('onstar');
+
+onstar.getName = funtion() {
+	return '인스턴스 메서드: ' + this.name;
+}
+
+onstar.__proto__.getName();		// 프로토타입 메서드: undefined
+onstar.getName();				// 인스턴스 메서드: onstar
+```
+
+위의 실행결과를 보면 프로토타입의 메서드가 아닌 인스턴스 메서드가 호출된 것을 볼 수있다. 이 현상을 메서드 오버라이드라고 하는데, 자바스크립트 엔진은 호출 주체로부터 가장 가까운 대상인 자신의 메서드나 프로퍼티를 검색하고 그 다음 dunder proto를 검색하는 식으로 동작한다.
+
+이 동작 방식때문에 프로토타입 체인이 가능한데, 그 이전에 짚고 넘어가야할 부분이 있다.
+프로토타입은 객체이기때문에 모든 객체의 dunder proto는 Object.prototype과 연결된다는 부분이다. 그렇기때문에 이 Object.prototype 은 항상 접근할 수 있으며 위의 코드에서는 `onstar.__proto__.__proto__`가 바로 그 프로토타입을 가리킬 것이다.
+
+Object.prototype 은 여러 메서드를 기본적으로 가지고있는데 한가지 예로 hasOwnProperty 메서드가 있으며 모든 인스턴스는 이 메서드에 접근할 수 있다.
+`onstar.__proto__.__proto__.hasOwnProperty(something)` 과 같은 방식으로 접근해야 할 것인데, 이때도 dunder proto의 생략이 적용된다. 즉, `onstar.hasOwnProperty(something)`의 형태로 호출할 수 있다.
+
+### 객체 전용 메서드의 예외사항
+
+앞의 설명과 같이, 어떤 생성자 함수이든 prototype은 반드시 객체이기 때문에 Object.prototype이 언제나 프로토타입 체인의 최상단에 존재하게 된다. 따라서 객체에서만 사용할 메서드를 Object.prototype에 정의한다면 다른 데이터 타입도 해당 메서드를 사용할 수 있기때문에 이와 같은 방식으로 정의할 수 없다.
+
+```js
+Object.prototype.methodforObject = function () {
+  console.log('객체 전용 메서드입니다');
+};
+const fruits = new Array('사과', '바나나');
+fruits.methodforObject(); // 출력: 객체 전용 메서드입니다.
+```
+
+위와 같이, Object에서 사용할 메서드가 Array타입의 인스턴스에서도 호출이 가능한 것을 확인할 수 있다.
+
+따라서 객체만을 대상으로 동작하는 객체 전용 메서드들은 부득이 Object.prototype이 아닌 생성자 함수인 Object에 스태틱 메서드로 부여할 수 밖에 없다. 생성자 함수 Object와 객체 리터럴 인스턴스 사이에는 this를 통한 연결이 불가능하기 때문에, '메서드명 앞의 대상이 곧 this'가 되는 방식인 this의 사용을 포기하고 대상 인스턴스를 인자로 직접 주입해야 하는 방식으로 구현되어 있다.
+
+즉, `Object.freeze(instance)` 의 호출만 가능할 뿐 `instance.freeze()` 같은 호출은 할 수 없는 것이다. 따라서 Object.prototype 에는 어디서든 활용할 수 있는 범용적인 메서드만 정의되어있다.
